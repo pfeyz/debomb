@@ -1,0 +1,17 @@
+usage: felx.py [-h] (-x | -c) [-d DESTINATION] ARCHIVE
+
+An archive extractor that can sensibly extract zip/tar bombs, and can clean up
+bomb sites from less sensible extraction endeavors.
+
+positional arguments:
+  ARCHIVE               A zip or tar file to target.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -x, --extract         Extracts ARCHIVE. Extracts to a new directory if the
+                        archive is a bomb. The new directory is named after
+                        ARCHIVE.
+  -c, --clean           Cleans up from an explosion of ARCHIVE. Moves all
+                        debris files to a new dir named after ARCHIVE.
+  -d DESTINATION, --destination DESTINATION
+                        Put files in SOURCE_DIR instead of cwd
