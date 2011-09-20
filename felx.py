@@ -21,7 +21,7 @@ def parse_args(arg_list):
 
     directory = parser.add_mutually_exclusive_group()
     directory.add_argument('-d', '--destination',
-                       help="Put files in SOURCE_DIR instead of cwd")
+                       help="Put files in DESTINATION instead of cwd")
 
     return parser.parse_args(arg_list)
 

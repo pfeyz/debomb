@@ -14,4 +14,4 @@ optional arguments:
   -c, --clean           Cleans up from an explosion of ARCHIVE. Moves all
                         debris files to a new dir named after ARCHIVE.
   -d DESTINATION, --destination DESTINATION
-                        Put files in SOURCE_DIR instead of cwd
+                        Put files in DESTINATION instead of cwd
