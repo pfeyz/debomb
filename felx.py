@@ -37,6 +37,10 @@ def CompressedFile(object):
         """
         return self.adaptee.extractall()
 
+    @abstractmethod
+    def close(self):
+        self.adaptee.close()
+
 CompressedFile.register(TarFile)
 
 class ZipFileAdapter(CompressedFile):
@@ -49,6 +53,9 @@ class ZipFileAdapter(CompressedFile):
 
     def extractall(self, dest='.'):
         return self.adaptee.extractall(dest)
+
+    def close(self):
+        self.adaptee.close()
 
 def Felx(object):
     """Safely extract a CompressedFile
@@ -78,6 +85,9 @@ def Felx(object):
         self.root = os.path.abspath(os.path.dirname(fname))
         self.name = os.path.basename(fname)
         self.names = self.cfile.getnames()
+
+    def __del__(self):
+        self.cfile.close()
 
     def sploded(self, root=None):
         sploded = False
