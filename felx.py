@@ -90,8 +90,31 @@ class Felx(object):
     def __del__(self):
         self.cfile.close()
 
-    def extract(self, path="."):
-        " Extracts archive into path, defaulting to curdir. "
+    def extract(self, path=".", warn=True):
+        """ Extracts archive into path, defaulting to curdir.
+
+        If warn is true, ask the user to confirm before extracting files with
+        path components that would put it outside of path.
+        """
+
+        if warn:
+            badfiles = []
+            for name in self.names:
+                dest = os.path.join(path, name)  # returns name if name is
+                                                 # absolute path
+                dest = os.path.abspath(dest)
+                if os.path.commonprefix([path, dest]) != path:
+                    badfiles.append(name)
+            if badfiles:
+                print "The following files in the archive have scary paths"
+                for name in badfiles:
+                    print "-", name
+                choice = ''
+                while choice not in ['y', 'n']:
+                    choice = raw_input("Extract this archive? (y/n) ")
+                if choice == 'n':
+                    print "Extraction aborted"
+                    return
         self.cfile.extractall(path)
 
     def extract_bomb(self, path=None):
