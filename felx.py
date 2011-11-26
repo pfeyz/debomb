@@ -7,7 +7,7 @@ from zipfile import ZipFile, is_zipfile
 from tarfile import TarFile, is_tarfile
 
 
-def CompressedFile(object):
+class CompressedFile(object):
     """Provide a uniform interface for all kinds of compressed files.
 
     It normalizes all zip interfaces to the TarFile interface, via
@@ -57,7 +57,7 @@ class ZipFileAdapter(CompressedFile):
     def close(self):
         self.adaptee.close()
 
-def Felx(object):
+class Felx(object):
     """Safely extract a CompressedFile
     """
 
