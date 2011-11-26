@@ -1,3 +1,5 @@
+DO NOT USE THIS YET - It is not tested and can probably destroy!
+
 usage: felx.py [-h] (-x | -c) [-d DESTINATION] ARCHIVE
 
 An archive extractor that can sensibly extract zip/tar bombs, and can clean up
