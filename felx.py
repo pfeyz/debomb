@@ -156,26 +156,13 @@ def parse_args(arg_list):
 
     return parser.parse_args(arg_list)
 
-def clean_bomb_site(archive, destination):
-    """ Takes the files that exploded from archive and moves them to a new
-    directory in destination.
-
-    archive is a filename and source and destination are both directory names.
-
-    """
-    print("Cleaning up after", archive, "moving debris to", destination)
-    raise NotImplementedError
-
-def extract(filename, dest):
-    print("Extracting", filename, "to", dest)
-    raise NotImplementedError
-
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     dest = os.getcwd()
+    felx = Felx(args.archive)
     if args.destination:
         dest = args.destination
     if args.extract:
-        extract(args.archive, dest)
+        felx.extract()
     elif args.clean:
-        clean_bomb_site(args.archive, dest)
+        felx.clean()
