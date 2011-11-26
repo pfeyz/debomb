@@ -89,11 +89,37 @@ class Felx(object):
     def __del__(self):
         self.cfile.close()
 
+    def extract(self, path="."):
+        " Extracts archive into path, defaulting to curdir. "
+        self.cfile.extractall(path)
+
+    def extract_bomb(self, path=None):
+        """ Extracts an archive bomb.
+
+        Extracts files into a directory named after the archive file. This new
+        directory will be created in the cwd unless path arg is supplied.
+
+        Assumes is_bomb() is True.
+        """
+
+        dest = self._make_extraction_dir(path)
+        self.extract(dest)
+
+    def is_bomb(self):
+        " Returns true if archive is a bomb. "
+        if len(self.names) > 1 and os.path.commonprefix(self.names) == '':
+            return True
+        return False
+
     def sploded(self, root=None):
+        """ Returns true if archive appears to have exploded in root.
+
+        Defaults to checking in same directory as archive.
+        """
+
         sploded = False
 
-        # we can't shorten things below 1 or 2
-        if len(self.names) <2:
+        if not self.is_bomb():
             return sploded
 
         if root is None:
@@ -114,24 +140,38 @@ class Felx(object):
 
         return sploded
 
-    def clean(self):
-        """Cleans up the directory
 
-        Does this by moving all 'sploded files into a dir with the
-        basename of the cfile
+    def clean(self, path=None):
+        """Cleans up the directory.
 
-        Assumes that sploded() is True
+        Does this by moving all 'sploded files into a dir with the basename of
+        the cfile. This new directory will be created in the cwd unless path arg
+        is supplied.
+
+        Assumes that sploded() is True.
         """
 
-        dest, ext = os.path.splitext(self.name)
-        dest = os.path.join(self.root, self.name)
-
-        if not os.path.exists(dest, 0755):
-            os.mkdir(dest)
-
+        dest = self._make_extraction_dir(path)
         p_join = os.path.join
         for name in self.names:
             shutil.move(p_join(self.root, name), p_join(dest, name))
+
+    def _make_extraction_dir(self, path=None):
+        """ Creates and returns a directory named after the archive file
+
+        If directory already exists then it's just returned.
+        """
+
+        dest, ext = os.path.splitext(self.name)
+        if path:
+            dest = os.path.join(path, dest)
+        else:
+            dest = os.path.join(self.root, dest)
+
+        if not os.path.exists(dest):
+            os.mkdir(dest)
+        return dest
+
 
 def parse_args(arg_list):
     parser = argparse.ArgumentParser(description=""" An archive extractor that
@@ -163,6 +203,12 @@ if __name__ == "__main__":
     if args.destination:
         dest = args.destination
     if args.extract:
-        felx.extract()
+        if felx.is_bomb():
+            felx.extract_bomb(dest)
+        else:
+            felx.extract(dest)
     elif args.clean:
-        felx.clean()
+        if felx.sploded():
+            felx.clean()
+        else:
+            print "No bomb appears to have exploded here"
