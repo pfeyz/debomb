@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import shutil
+import tarfile
 from abc import ABCMeta, abstractmethod
 from zipfile import ZipFile, is_zipfile
 from tarfile import TarFile, is_tarfile
@@ -72,7 +73,7 @@ class Felx(object):
         if Adapter is not None:
             self.cfile = Adapter(fname)
         elif is_tarfile(fname):
-            self.cfile = TarFile(fname)
+            self.cfile = tarfile.open(fname)
         elif is_zipfile(fname):
             self.cfile = ZipFileAdapter(fname)
         else:
