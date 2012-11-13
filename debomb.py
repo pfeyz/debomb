@@ -135,7 +135,7 @@ class Debomber(object):
             return True
         return False
 
-    def sploded(self, root=None):
+    def has_exploded(self, root=None):
         """ Returns true if archive appears to have exploded in root.
 
         Defaults to checking in same directory as archive.
@@ -172,7 +172,7 @@ class Debomber(object):
         the cfile. This new directory will be created in the cwd unless path arg
         is supplied.
 
-        Assumes that sploded() is True.
+        Assumes that has_exploded() is True.
         """
 
         dest = self._make_extraction_dir(path)
@@ -232,7 +232,7 @@ if __name__ == "__main__":
         else:
             debomb.extract(dest)
     elif args.clean:
-        if debomb.sploded():
+        if debomb.has_exploded():
             debomb.clean()
         else:
             print "No bomb appears to have exploded here"
