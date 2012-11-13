@@ -58,12 +58,12 @@ class ZipFileAdapter(CompressedFile):
     def close(self):
         self.adaptee.close()
 
-class Felx(object):
-    """Safely extract a CompressedFile
+class Debomber(object):
+    """ Safely extract a compressed file, or clean up after one that's exploded.
     """
 
     def __init__(self, fname, Adapter=None):
-        """Initialize a Felx bot.
+        """Initialize an Debomber
 
         fname should be the (relative or absolute) path to a tarfile.
 
@@ -223,16 +223,16 @@ def parse_args(arg_list):
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     dest = os.getcwd()
-    felx = Felx(args.archive)
+    debomb = Debomber(args.archive)
     if args.destination:
         dest = args.destination
     if args.extract:
-        if felx.is_bomb():
-            felx.extract_bomb(dest)
+        if debomb.is_bomb():
+            debomb.extract_bomb(dest)
         else:
-            felx.extract(dest)
+            debomb.extract(dest)
     elif args.clean:
-        if felx.sploded():
-            felx.clean()
+        if debomb.sploded():
+            debomb.clean()
         else:
             print "No bomb appears to have exploded here"
