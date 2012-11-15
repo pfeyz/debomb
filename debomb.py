@@ -182,9 +182,9 @@ class Debomber(object):
 
 
 def parse_args(arg_list):
-    parser = argparse.ArgumentParser(description=""" An archive extractor that
-    can sensibly extract zip/tar bombs, and can clean up bomb sites from less
-    sensible extraction endeavors.""")
+    parser = argparse.ArgumentParser(description=""" debomb cleans up
+    directories littered by the contents off ill-packaged compressed archives
+    (aka tarboms, but zip as well.)""")
 
     parser.add_argument('archive', metavar="ARCHIVE",
                         help="The archive file to target.")

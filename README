@@ -1,19 +1,17 @@
-DO NOT USE THIS YET - It is not tested and can probably destroy!
+Use this at your own risk. Has not been tested extensively.
 
-usage: felx.py [-h] (-x | -c) [-d DESTINATION] ARCHIVE
+  usage: debomb.py [-h] [-d DIRECTORY] [-f] [-P] ARCHIVE
 
-An archive extractor that can sensibly extract zip/tar bombs, and can clean up
-bomb sites from less sensible extraction endeavors.
+  debomb cleans up directories littered by the contents off ill-packaged
+  compressed archives (aka tarboms, but zip as well.)
 
-positional arguments:
-  ARCHIVE               A zip or tar file to target.
+  positional arguments:
+    ARCHIVE               The archive file to target.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -x, --extract         Extracts ARCHIVE. Extracts to a new directory if the
-                        archive is a bomb. The new directory is named after
-                        ARCHIVE.
-  -c, --clean           Cleans up from an explosion of ARCHIVE. Moves all
-                        debris files to a new dir named after ARCHIVE.
-  -d DESTINATION, --destination DESTINATION
-                        Put files in DESTINATION instead of cwd
+  optional arguments:
+    -h, --help            show this help message and exit
+    -d DIRECTORY, --directory DIRECTORY
+			  The directory file to clean up in.
+    -f, --force           Clean up even if it's uncertain there was an
+			  explosion.
+    -P, --absolute-names  Do not strip prefixes from absolute/relative filenames
