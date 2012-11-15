@@ -61,10 +61,14 @@ class ZipFileAdapter(CompressedFile):
 class Debomber(object):
     """ Cleans up after an archive that's exploded. """
 
-    def __init__(self, fname, rootdir=None, Adapter=None):
+    def __init__(self, fname, rootdir=None, partial=False, preserve_paths=False,
+                 Adapter=None):
         """Initialize an Debomber
 
-        fname should be the (relative or absolute) path to a tarfile.
+        fname should be a path to an archive, tar/zip or one that Adaptor can
+        handle.
+
+        rootdir is the directory to clean up. Defaults to current directory.
 
         Adapter is any class that satisfies the CompresedFile api.
         """
@@ -87,35 +91,51 @@ class Debomber(object):
         self.root = os.path.abspath(rootdir)
         self.names = self.cfile.getnames()
         self.archive_fn = os.path.basename(fname)
+        self.preserve_paths = preserve_paths
+        self.partial = partial
+        if not self.preserve_paths:
+            self.names = [n for n in self.rebase_paths()]
 
     def __del__(self):
         self.cfile.close()
 
-    def has_exploded(self, root=None):
-        """ Returns true if archive appears to have exploded in root.
-
-        Defaults to checking in same directory as archive.
-        """
-
-        sploded = False
-
-        if root is None:
-            root = self.root
-
-        # Check if the dir of the tarbomb has all its files
-        dir_names = os.listdir(root)
-        if len(dir_names) >= len(self.names):
-            sploded_names = []
-            for name in self.names:
-                if name in dir_names:
-                    sploded_names.append(name)
+    def rebase_paths(self):
+        for name in self.names:
+            prev_name = name
+            while True:
+                if os.path.join(self.root, name) == name:
+                    # name can't be placed under root
+                    _, name = os.path.split(name)
+                    if name == prev_name:
+                        break
+                    prev_name = name
                 else:
                     break
+            if os.path.join(self.root, name) == name:
+                raise Exception(
+                    message="Could not strip path prefix from {0}".format(
+                        name))
+            yield name
 
-            if len(sploded_names) == len(self.names):
-                sploded = True
 
-        return sploded
+    def has_exploded(self):
+        """ Returns true if archive appears to have exploded.
+        """
+
+        # Check if the root dir contains the files from the archive
+        files = self.names[:]
+        for fn in files[:]:
+            if os.path.exists(os.path.join(self.root, fn)):
+                files.remove(fn)
+        files_found = len(self.names) - len(files)
+        if self.partial and files_found > 0:
+            return True
+        elif files_found == len(self.names):
+            return True
+        elif files_found == 0:
+            return False
+        else:
+            return files
 
 
     def clean(self):
@@ -131,7 +151,13 @@ class Debomber(object):
         dest = self._make_extraction_dir()
         p_join = os.path.join
         for name in self.names:
-            shutil.move(p_join(self.root, name), p_join(dest, name))
+            try:
+                shutil.move(p_join(self.root, name), p_join(dest, name))
+            except IOError as e:
+                if self.partial:
+                    pass
+                else:
+                    raise e
 
     def _make_extraction_dir(self):
         """ Creates and returns a directory named after the archive file
@@ -154,14 +180,29 @@ def parse_args(arg_list):
 
     parser.add_argument('archive', metavar="ARCHIVE",
                         help="The archive file to target.")
+    parser.add_argument('-d', '--directory', metavar="DIRECTORY", default=None,
+                        help="The directory file to clean up in.")
+    parser.add_argument('-f', '--force', action='store_true', default=False,
+       help="Clean up even if it's uncertain there was an explosion.")
+    parser.add_argument('-P', '--absolute-names', action='store_true',
+       help="Do not strip prefixes from absolute/relative filenames")
 
     return parser.parse_args(arg_list)
 
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     dest = os.getcwd()
-    debomb = Debomber(args.archive)
-    if debomb.has_exploded():
+    debomb = Debomber(args.archive, args.directory, args.force, args.absolute_names)
+    sploded = debomb.has_exploded()
+    if sploded is True:
         debomb.clean()
-    else:
+    elif sploded is False:
         print "No bomb appears to have exploded here"
+    else:
+        print ("*** Partial explosion detected. The following files from the "
+               "archive were not found in the directory:")
+        print
+        for fn in sploded:
+            print fn
+        print
+        print "Rerun with -f to debomb anyway."
