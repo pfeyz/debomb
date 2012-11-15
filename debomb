@@ -7,8 +7,11 @@ from debomber import Debomber
 
 def parse_args(arg_list):
     parser = argparse.ArgumentParser(description=""" debomb cleans up
-    directories littered by the contents off ill-packaged compressed archives
-    (aka tarboms, but zip as well.)""")
+    directories littered by the contents of ill-packaged archive files (aka
+    tar/zip-bombs, where instead of a single directory existing in the top level
+    of the archive there are many files). Given an archive name, it will move
+    all the archive's extracted members into a directory named after the
+    archive.""")
 
     parser.add_argument('archive', metavar="ARCHIVE",
                         help="The archive file to target.")
@@ -17,7 +20,9 @@ def parse_args(arg_list):
     parser.add_argument('-f', '--force', action='store_true', default=False,
        help="Clean up even if it's uncertain there was an explosion.")
     parser.add_argument('-P', '--absolute-names', action='store_true',
-       help="Do not strip prefixes from absolute/relative filenames")
+       help="""Do not strip prefixes from absolute/relative filenames. This
+       behaves similarly to tar's -P and will allow extracting to arbitrary
+       places in your filesystem, so make sure you trust the archive.""")
 
     return parser.parse_args(arg_list)
 
