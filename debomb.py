@@ -99,11 +99,19 @@ class Debomber(object):
     def __del__(self):
         self.cfile.close()
 
+    def _outside_root(self, fn):
+        " Returns true if fn is a path lying outside self.root "
+        return os.path.join(self.root, fn) == fn
+
     def rebase_paths(self):
+        """ Rewrites filenames in archive so that they refer to a path within
+        the self.root directory. Does not change archive file on disk.
+        """
+
         for name in self.names:
             prev_name = name
             while True:
-                if os.path.join(self.root, name) == name:
+                if self._outside_root(name):
                     # name can't be placed under root
                     _, name = os.path.split(name)
                     if name == prev_name:
@@ -111,7 +119,7 @@ class Debomber(object):
                     prev_name = name
                 else:
                     break
-            if os.path.join(self.root, name) == name:
+            if self._outside_root(name):
                 raise Exception(
                     message="Could not strip path prefix from {0}".format(
                         name))
