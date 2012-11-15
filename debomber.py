@@ -1,6 +1,4 @@
-import argparse
 import os
-import sys
 import shutil
 import tarfile
 from abc import ABCMeta, abstractmethod
@@ -179,38 +177,3 @@ class Debomber(object):
         if not os.path.exists(dest):
             os.mkdir(dest)
         return dest
-
-
-def parse_args(arg_list):
-    parser = argparse.ArgumentParser(description=""" debomb cleans up
-    directories littered by the contents off ill-packaged compressed archives
-    (aka tarboms, but zip as well.)""")
-
-    parser.add_argument('archive', metavar="ARCHIVE",
-                        help="The archive file to target.")
-    parser.add_argument('-d', '--directory', metavar="DIRECTORY", default=None,
-                        help="The directory file to clean up in.")
-    parser.add_argument('-f', '--force', action='store_true', default=False,
-       help="Clean up even if it's uncertain there was an explosion.")
-    parser.add_argument('-P', '--absolute-names', action='store_true',
-       help="Do not strip prefixes from absolute/relative filenames")
-
-    return parser.parse_args(arg_list)
-
-if __name__ == "__main__":
-    args = parse_args(sys.argv[1:])
-    dest = os.getcwd()
-    debomb = Debomber(args.archive, args.directory, args.force, args.absolute_names)
-    sploded = debomb.has_exploded()
-    if sploded is True:
-        debomb.clean()
-    elif sploded is False:
-        print "No bomb appears to have exploded here"
-    else:
-        print ("*** Partial explosion detected. The following files from the "
-               "archive were not found in the directory:")
-        print
-        for fn in sploded:
-            print fn
-        print
-        print "Rerun with -f to debomb anyway."
