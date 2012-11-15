@@ -59,10 +59,9 @@ class ZipFileAdapter(CompressedFile):
         self.adaptee.close()
 
 class Debomber(object):
-    """ Safely extract a compressed file, or clean up after one that's exploded.
-    """
+    """ Cleans up after an archive that's exploded. """
 
-    def __init__(self, fname, Adapter=None):
+    def __init__(self, fname, rootdir=None, Adapter=None):
         """Initialize an Debomber
 
         fname should be the (relative or absolute) path to a tarfile.
@@ -90,51 +89,6 @@ class Debomber(object):
     def __del__(self):
         self.cfile.close()
 
-    def extract(self, path=".", warn=True):
-        """ Extracts archive into path, defaulting to curdir.
-
-        If warn is true, ask the user to confirm before extracting files with
-        path components that would put it outside of path.
-        """
-
-        if warn:
-            badfiles = []
-            for name in self.names:
-                dest = os.path.join(path, name)  # returns name if name is
-                                                 # absolute path
-                dest = os.path.abspath(dest)
-                if os.path.commonprefix([path, dest]) != path:
-                    badfiles.append(name)
-            if badfiles:
-                print "The following files in the archive have scary paths"
-                for name in badfiles:
-                    print "-", name
-                choice = ''
-                while choice not in ['y', 'n']:
-                    choice = raw_input("Extract this archive? (y/n) ")
-                if choice == 'n':
-                    print "Extraction aborted"
-                    return
-        self.cfile.extractall(path)
-
-    def extract_bomb(self, path=None):
-        """ Extracts an archive bomb.
-
-        Extracts files into a directory named after the archive file. This new
-        directory will be created in the cwd unless path arg is supplied.
-
-        Assumes is_bomb() is True.
-        """
-
-        dest = self._make_extraction_dir(path)
-        self.extract(dest)
-
-    def is_bomb(self):
-        " Returns true if archive is a bomb. "
-        if len(self.names) > 1 and os.path.commonprefix(self.names) == '':
-            return True
-        return False
-
     def has_exploded(self, root=None):
         """ Returns true if archive appears to have exploded in root.
 
@@ -142,9 +96,6 @@ class Debomber(object):
         """
 
         sploded = False
-
-        if not self.is_bomb():
-            return sploded
 
         if root is None:
             root = self.root
@@ -203,20 +154,7 @@ def parse_args(arg_list):
     sensible extraction endeavors.""")
 
     parser.add_argument('archive', metavar="ARCHIVE",
-                        help="A zip or tar file to target.")
-
-    action = parser.add_mutually_exclusive_group(required=True)
-    action.add_argument('-x', '--extract', action='store_true', help="""
-    Extracts ARCHIVE. Extracts to a new directory if the archive is a bomb. The
-    new directory is named after ARCHIVE.""")  # by removing the file extension,
-                                               # but what is there is none?
-    action.add_argument('-c', '--clean', action='store_true', help=""" Cleans up
-    from an explosion of ARCHIVE. Moves all debris files to a new dir named
-    after ARCHIVE.""")
-
-    directory = parser.add_mutually_exclusive_group()
-    directory.add_argument('-d', '--destination',
-                       help="Put files in DESTINATION instead of cwd")
+                        help="The archive file to target.")
 
     return parser.parse_args(arg_list)
 
@@ -224,15 +162,7 @@ if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     dest = os.getcwd()
     debomb = Debomber(args.archive)
-    if args.destination:
-        dest = args.destination
-    if args.extract:
-        if debomb.is_bomb():
-            debomb.extract_bomb(dest)
-        else:
-            debomb.extract(dest)
-    elif args.clean:
-        if debomb.has_exploded():
-            debomb.clean()
-        else:
-            print "No bomb appears to have exploded here"
+    if debomb.has_exploded():
+        debomb.clean()
+    else:
+        print "No bomb appears to have exploded here"
