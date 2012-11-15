@@ -82,9 +82,11 @@ class Debomber(object):
                 .format(ext)
                 )
 
-        self.root = os.path.abspath(os.path.dirname(fname))
-        self.name = os.path.basename(fname)
+        if rootdir is None:
+            rootdir = os.getcwd()
+        self.root = os.path.abspath(rootdir)
         self.names = self.cfile.getnames()
+        self.archive_fn = os.path.basename(fname)
 
     def __del__(self):
         self.cfile.close()
@@ -116,7 +118,7 @@ class Debomber(object):
         return sploded
 
 
-    def clean(self, path=None):
+    def clean(self):
         """Cleans up the directory.
 
         Does this by moving all 'sploded files into a dir with the basename of
@@ -126,22 +128,19 @@ class Debomber(object):
         Assumes that has_exploded() is True.
         """
 
-        dest = self._make_extraction_dir(path)
+        dest = self._make_extraction_dir()
         p_join = os.path.join
         for name in self.names:
             shutil.move(p_join(self.root, name), p_join(dest, name))
 
-    def _make_extraction_dir(self, path=None):
+    def _make_extraction_dir(self):
         """ Creates and returns a directory named after the archive file
 
         If directory already exists then it's just returned.
         """
 
-        dest, ext = os.path.splitext(self.name)
-        if path:
-            dest = os.path.join(path, dest)
-        else:
-            dest = os.path.join(self.root, dest)
+        dest, ext = os.path.splitext(self.archive_fn)
+        dest = os.path.join(self.root, dest)
 
         if not os.path.exists(dest):
             os.mkdir(dest)
